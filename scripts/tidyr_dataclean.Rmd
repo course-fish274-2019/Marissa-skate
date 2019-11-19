@@ -1,0 +1,26 @@
+---
+title: "tidyr_my-project"
+author: "Marissa Leatherman"
+date: "11/19/2019"
+output: html_document
+---
+
+## Import library
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+## Import data
+```{r}
+trawlog <- read.csv("marissa-skate/data_raw/ebs2017_2018.csv")
+```
+```{r}
+trawl <- 
+  trawl_og %>%
+  separate('GENUS_SPECIES', c('Genus','species'),'_', extra='drop') %>%
+  group_by(Genus) %>%
+  summarize(count=n())
+```
+
