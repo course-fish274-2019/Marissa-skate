@@ -1,26 +1,86 @@
 ---
-title: "tidyr_my-project"
+title: "Bottom Dwellers at Depth"
 author: "Marissa Leatherman"
 date: "11/19/2019"
-output: html_document
+output:
+  slidy_presentation: default
 ---
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
 
-## Import library
-```{r}
+# Mini Project Part 2 - Tidyr
+
+## Comparing the distributions of nine bottom dwelling Arctic species by depth and latitude.
+### How do the distributions of the nine Bering Sea species vary as latitude and depth change?
+
+#### In this document:
+
+1. Cleaned data will be loaded, original data from [2017-2018 Eastern Bering Sea Shelf Groundfish Bottom Trawl Survey](https://www.fisheries.noaa.gov/resource/data/2017-2018-eastern-bering-sea-shelf-groundfish-bottom-trawl-survey-data)
+
+2. Data will be filtered and chosen, then analyzed for graphical use
+
+3. Visualizations will be made that display the distribution of the nine species by depth and latitude
+
+
+## Imported library
+### Used dplyr, ggplot2 and tidyr out of Tidyverse
+```{r library, include=FALSE}
 library(tidyverse)
-library(dplyr)
 library(ggplot2)
 ```
 
 ## Import data
-```{r}
-trawlog <- read.csv("marissa-skate/data_raw/ebs2017_2018.csv")
-```
-```{r}
-trawl <- 
-  trawl_og %>%
-  separate('GENUS_SPECIES', c('Genus','species'),'_', extra='drop') %>%
-  group_by(Genus) %>%
-  summarize(count=n())
+### Original data from [2017-2018 Eastern Bering Sea Shelf Groundfish Bottom Trawl Survey] (https://www.fisheries.noaa.gov/resource/data/2017-2018-eastern-bering-sea-shelf-groundfish-bottom-trawl-survey-data)
+```{r import, echo=FALSE}
+trawlog <- read.csv("../data_raw/ebs2017_2018.csv")
 ```
 
+## Clean data using tidyr to 'create 'tidy' data set
+- Separated scienticic name column into Genus and species columns
+- Separate Date-Time column into Date and Time Columns
+- Select data relevent for current and furture anaylysis
+
+```{r clean, echo=TRUE, warning=FALSE}
+trawl <- 
+  trawlog %>%
+  separate('GENUS_SPECIES', c('GENUS','SPECIES'),'_', extra='drop') %>%
+  separate('DATETIME', c('DATE','TIME'),'_', extra='drop') %>%
+  select('LATITUDE','LONGITUDE','DATE','TIME','GENUS','SPECIES','BOT_DEPTH','BOT_TEMP', 'SURF_TEMP')
+```
+
+## Filtered out Genus that have less than 1000 observations in total to use similar sample sizes
+
+```{r filter, message=FALSE, echo=TRUE, warning=FALSE}
+count <- 
+  trawl %>%
+  count(GENUS)
+
+trawl <-
+  left_join(trawl,count) %>%
+  filter(n>1000) %>%
+  na.omit() %>%
+  select('LATITUDE','LONGITUDE','BOT_DEPTH','GENUS','SPECIES')
+```
+
+## Data set cleaned and filtered
+
+```{r table, message=FALSE, echo=FALSE, warning=FALSE}
+
+knitr::kable(head(trawl))
+```
+
+## Figure 1
+##### Plot of latitude and depth with seperate plots for different Genus
+
+```{r distplot, message=FALSE, warning=FALSE}
+ggplot() +
+  geom_point(data=trawl, mapping = aes(x = LATITUDE,y=BOT_DEPTH, color=GENUS), alpha = 0.3)+
+  scale_y_reverse()+
+  scale_x_continuous(position='top')+
+  labs(x='Latitude (degrees)',y='Depth below Sea Level (m)')+
+  labs(title='Distribution of Bottom Dwelling Arctic Species 
+       in the Bering Strait at Depth by Latitude')+
+  facet_wrap(~GENUS)
+ggsave('../figures/beringplt.jpg')
+```

@@ -1,12 +1,11 @@
-# Marissa-Skate
+# tidyr project cleanup
 
+## The purpose of this project is to explore the tidyr package, gain mastery over data organization, and  gain familiarity with creating presentation slides with rmarkdown
 
-## Files Used - See HTML for more details about purpose of analysis
+Files in order of use:
 
-### scripts/Skates_and_Polluck.Rmd -- .rmd file that contains scripts, prose, and creates 2 figures
+1. scripts/tidyr_dataclean.rmd - RMarkdown file containing prose explaining data analysis, code for data analysis and exports one figure 
 
-### data_raw/ebs2017_2018.csv -- Data from NOAA of bottom trawl in east Bering Sea in 2016, 2017, and 2018
+2. scripts/
 
-### figures/dist_toget.jpg and figures/dist_2 -- The first graph shows the distributions of pollock and skates together at depth and temperature and the second figure shows them seperately
-
-### outputs/Skates_and_Polluck.html -- knitted html of data
+3.
