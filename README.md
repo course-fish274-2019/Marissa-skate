@@ -15,3 +15,16 @@ Files in order of use:
 5. output/week9_html.html - html export of knit rmarkdown file
 
 6. output/week9_presentation.html - Slideshow made with slidy as export of RMarkdown file
+
+
+## Game Plan for the next two weeks
+
+1. Add additional data from other arctic trawls and pelagic collections
+
+2. Merge and organize new data and sort by +1000 Genus samples
+
+3. Make at least one scatterplot and barplot to represent comparisons between two species
+
+4. Figure out how to make code that saves as .rmd or presentation html
+
+5. Figure out how to write script that runs other documents
