@@ -1,4 +1,4 @@
-# tidyr project cleanup
+# East Bering Sea Trawl Data Analysis
 
 ## The purpose of this project is to explore the tidyr package, gain mastery over data organization, and  gain familiarity with creating presentation slides with rmarkdown
 
