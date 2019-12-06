@@ -1,0 +1,48 @@
+---
+title: "Trawl Data Analysis"
+author: "Marissa Leatherman"
+date: "12/5/2019"
+output: html_document
+---
+
+```{r library}
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+
+
+```{r setup}
+trawl <- read.csv("../data/ebs2017_2018.csv", header=TRUE, sep=',')
+ai <- read.csv("../data/ai2014_2018.csv", header=TRUE, sep=',')
+bss <- read.csv("../data/bsslope2002_2016.csv", header=TRUE, sep=',')
+ebs13 <- read.csv("../data/ebs2013_2016.csv", header=TRUE, sep=',')
+goa <- read.csv("../data/goa2015_2017.csv", header=TRUE, sep=',')
+nbs <- read.csv("../data/nbs1982_2018.csv", header=TRUE, sep=',')
+
+trawl <- 
+  rbind(ai, trawl) %>% 
+  rbind(bss, trawl) %>% 
+  rbind(ebs13, trawl) %>% 
+  rbind(goa, trawl) %>% 
+  rbind(nbs, trawl)
+```
+
+
+
+```{r setup}
+trawl <- 
+  separate('GENUS_SPECIES', c('GENUS','SPECIES'),'_', extra='drop') %>%
+  separate('DATETIME', c('DATE','TIME'),'_', extra='drop') %>%
+  select('LATITUDE','LONGITUDE','DATE','TIME','GENUS','SPECIES','BOT_DEPTH','BOT_TEMP', 'SURF_TEMP')
+
+```
+
+
+
+```{r}
+
+```
+
