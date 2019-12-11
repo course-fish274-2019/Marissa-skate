@@ -1,0 +1,159 @@
+---
+title: "Distributions of *Gadus* and *Pagurus*"
+author: "Marissa Leatherman"
+date: "12/11/2019"
+output:
+  slidy_presentation: default
+---
+
+```{r setup,include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+## Comparing Arctic cod *Gadus* and known prey the hermit crab genus *Pagurus*.
+### How do the distributions of known predator and prey compare?
+### How do the distributions change with location, depth, and water temperature?
+![](https://mission-blue.org/wp-content/uploads/2015/08/GP01KJB_bering-sea.jpg)
+
+## For this project:
+
+1. Data from NOAA Alaskan Trawls will be merged and organized to maximize data from all parts of the Bering Sea.
+
+2. Data will be filtered and chosen, then analyzed for graphical use
+
+3. Visualizations will be made that display the distribution of the two species by location, water temperature and depth.
+
+## Imported library
+### A lot of packages were needed to complete this project:
+
+1. tidyverse, using ggplot2, tidyr, and dplyr to organize data
+
+2. rnaturalearth, rnaturalearthdata for world map data
+
+3. ggmap, maps and mapdata for map data as well
+
+4. rgeos and sf for error-fixing/ map holes
+
+```{r library, include=FALSE, echo=FALSE}
+
+library(rgeos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(tidyverse)
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
+
+
+```
+
+## Data merged to maximize area of map
+### Trawls from The Aleutian Islands, North and East Bering Sea, the Bering Sea slope and the Gulf of Alaska all merged
+##### Trawls taken at different years for different number of years, future work could be more accurate by making sure years match, could make time plots
+![](https://1.bp.blogspot.com/-sxRrxW4qev0/VF2sL9SGbzI/AAAAAAAAOiI/qKAJFztiXDI/s1600/forecast-wave-height-animation.gif)
+
+```{r import, echo=FALSE, warning=FALSE}
+
+trawlall <- read.csv("../data/ebs2017_2018.csv", header=TRUE, sep=',')
+ai <- read.csv("../data/ai2014_2018.csv", header=TRUE, sep=',')
+bss <- read.csv("../data/bsslope2002_2016.csv", header=TRUE, sep=',')
+goa <- read.csv("../data/goa2015_2017.csv", header=TRUE, sep=',')
+nbs <- read.csv("../data/nbs1982_2018.csv", header=TRUE, sep=',')
+
+trawlall <- 
+  rbind(ai, trawlall) %>% 
+  rbind(bss, trawlall) %>% 
+  rbind(goa, trawlall) %>% 
+  rbind(nbs, trawlall)
+
+```
+
+## Select data using tidyr and dplyr
+- Separated scienticic name column into Genus and species columns
+- Separated date-time column into date and time columns
+- Select data relevent for current and furture anaylysis
+
+![](https://live.staticflickr.com/7283/8715776914_368abb0a8b_b.jpg){width=50%}
+![](http://www.virtualmuseum.ca/media/edu/EN/uploads/image/ATLANTICCODDieterCraasmann34782.jpg){width=50%}
+
+## Filtered out *Pagurus* and *Gadus* genuses
+### Two most common and known predator-prey relationship
+
+```{r filter, echo=TRUE, warning=FALSE}
+trawl <- 
+  trawlall %>% 
+  separate('GENUS_SPECIES', c('GENUS','SPECIES'),'_', extra='drop') %>%
+  separate('DATETIME', c('DATE','TIME'),'_', extra='drop') %>%
+  select('LATITUDE','LONGITUDE','DATE','TIME','GENUS','SPECIES','BOT_DEPTH','BOT_TEMP', 'SURF_TEMP')
+
+Pagurus <- 
+  trawl %>% 
+  filter(GENUS=='Pagurus')
+
+Gadus <-
+  trawl %>% 
+  filter(GENUS=='Gadus')
+
+trawl <- rbind(Gadus, Pagurus)
+```
+
+## Map of Alaska with locations of trawls involing chosen genuses
+
+```{r map, message=FALSE, echo=FALSE, warning=FALSE}
+
+sites <- st_as_sf(trawl, coords = c("LONGITUDE", "LATITUDE"), crs = 4326, agr = "constant")
+world <- map_data("world")
+plt1 <- 
+  ggplot() +
+  theme_minimal()+
+  labs(x='Longitude',y='Latititude')+
+  labs(title='Distribution of Bottom Dwelling Arctic Species 
+       in the waters around Alaska')+
+  geom_polygon(data = world, aes(x = long, y = lat, group=group)) +
+  coord_fixed(xlim = c(-180.0, -130.0), ylim = c(50., 70.), ratio = 1.3) +
+  geom_point(data=trawl, aes(x= LONGITUDE, y = LATITUDE, fill=GENUS, color=GENUS), alpha = 0.3)
+plt1
+
+```
+
+## Comparing surface and bottom temperatures
+
+```{r graph, message=FALSE, echo=FALSE, warning=FALSE}
+
+ggplot() +
+  geom_point(data=trawl, mapping = aes(x = BOT_TEMP,y=SURF_TEMP, color=GENUS), alpha = 0.3)+
+  theme_minimal()+
+  scale_y_log10()+
+  scale_x_continuous()+
+  labs(x='Temperature at Trawl Depth (degrees C)',y='Surface Temperature (degrees C))')+
+  labs(title='Distribution of Bottom Dwelling Arctic Species 
+       in the Bering Strait as Surface and At-depth Temperature Changes')+
+  facet_wrap(~GENUS)
+
+
+```
+
+## Distributions by depth
+
+```{r hist, message=FALSE, echo=FALSE, warning=FALSE}
+ggplot() +
+  geom_histogram(data=trawl, mapping = aes(x = BOT_DEPTH, fill=GENUS), alpha = 0.3, bins=40, color='black')+
+  scale_y_continuous(position = 'top')+
+  theme_minimal()+
+  coord_flip()+
+  scale_x_reverse()+
+  labs(y='Frequency of Sampling',x='Depth below Sea Level (m)')+
+  labs(title='Distribution of Bottom Dwelling Arctic Species 
+       at Depth')
+```
+
+## So what was the point?
+### Looking at the differeing distributions of predator and prey can tell us the differences in abundance and set baselines for future studies
+#### If in the next 5 years, this data has change significantly, previous years can tell us what has changed about the environment
+#### Questions? Comments?
+
+![](https://thumbs.gfycat.com/PresentDefinitiveArgusfish-size_restricted.gif){width=50%}
