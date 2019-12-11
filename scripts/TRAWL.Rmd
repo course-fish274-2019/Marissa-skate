@@ -5,47 +5,37 @@ date: "12/5/2019"
 output: html_document
 ---
 
-```{r library, echo=TRUE}
-install.packages("lubridate")
-install.packages("ggplot2")
-install.packages("data.table")
-install.packages("ggrepel")
-install.packages("dplyr")
-install.packages("data.table")
-install.packages("tidyverse")
-install.packages("rworldmap")
-library(rworldmap)
-
+```{r library}
+library(oceanmap)
+library(rgeos)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
 library(tidyverse)
 library(ggplot2)
-library(lubridate)
-library(ggplot2)
-library(data.table)
-library(ggrepel)
-library(dplyr)
-library(data.table)
+library(ggmap)
+library(maps)
+library(mapdata)
 
 
 ```
 
 
 
-```{r setup, echo=TRUE}
+```{r setup}
 
 trawlall <- read.csv("../data/ebs2017_2018.csv", header=TRUE, sep=',')
 ai <- read.csv("../data/ai2014_2018.csv", header=TRUE, sep=',')
 bss <- read.csv("../data/bsslope2002_2016.csv", header=TRUE, sep=',')
-ebs13 <- read.csv("../data/ebs2013_2016.csv", header=TRUE, sep=',')
 goa <- read.csv("../data/goa2015_2017.csv", header=TRUE, sep=',')
 nbs <- read.csv("../data/nbs1982_2018.csv", header=TRUE, sep=',')
 
 trawlall <- 
   rbind(ai, trawlall) %>% 
   rbind(bss, trawlall) %>% 
-  rbind(ebs13, trawlall) %>% 
   rbind(goa, trawlall) %>% 
   rbind(nbs, trawlall)
-
 
 ```
 
@@ -56,47 +46,42 @@ trawl <-
   separate('DATETIME', c('DATE','TIME'),'_', extra='drop') %>%
   select('LATITUDE','LONGITUDE','DATE','TIME','GENUS','SPECIES','BOT_DEPTH','BOT_TEMP', 'SURF_TEMP')
 
-count <-
+Pagurus <- 
   trawl %>% 
-  count(GENUS)
+  filter(GENUS=='Pagurus')
 
-trawl <- 
-  left_join(trawl,count)%>% 
-  filter(GENUS=='Pagurus') %>%
-  na.omit()
+Gadus <-
+  trawl %>% 
+  filter(GENUS=='Gadus')
+
+trawl <- rbind(Gadus, Pagurus)
 ```
 
+```{r map}
 
-```{r setup, message=FALSE, echo=FALSE, warning=FALSE}
-knitr::kable(head(trawl))
-```
-
-
-```{r setup}
-install.packages('rworldextra')
-library(rworldextra)
-newmap <- getMap(resolution = "high")
-plot(newmap, xlim = c(-180,  -134), ylim = c(50, 70), asp = 1)
-points(trawl$LONGITUDE, trawl$LATITUDE, col = "red", cex = .6)
-```
-
-```{r}
-# map the data
-# map + data points
-install.packages('ggmap')
-library(ggmap)
-map <- 
-  get_map(location = c(lon = -150, lat = 55), maptype = c("watercolor"), source = c("osm"), color = c("color"), language = "en-EN") +
-  geom_point(aes(x = LONGITUDE, y = lLATITUDE), data = trawl, alpha = .5)
-ggmap(map)
-# adjust the legend
-mapLegend <- 
-  map +
-  scale_area(breaks = sqrt(c(1, 5, 10, 50, 100, 500)), labels = c(1, 5, 10, 50, 100, 500), name = "routes")
-# plot the map
-
+sites <- st_as_sf(trawl, coords = c("LONGITUDE", "LATITUDE"), crs = 4326, agr = "constant")
+world <- map_data("world")
+plt1 <- 
+  ggplot() +
+  geom_polygon(data = world, aes(x = long, y = lat, group=group)) +
+  coord_fixed(xlim = c(-180.0, -130.0), ylim = c(50., 70.), ratio = 1.3) +
+  geom_point(data=trawl, aes(x= LONGITUDE, y = LATITUDE, fill=GENUS, color=GENUS), alpha = 0.3)
+  
+plt1
 
 ```
 
 
+```{r graph}
+ggplot() +
+  geom_point(data=trawl, mapping = aes(x = BOT_TEMP,y=SURF_TEMP, color=GENUS), alpha = 0.3)+
+  scale_y_log10()+
+  scale_x_continuous()+
+  labs(x='Temperature at Trawl Depth (degrees C)',y='Surface Temperature (degrees C))')+
+  labs(title='Distribution of Bottom Dwelling Arctic Species 
+       in the Bering Strait as Surface and At-depth Temperature Changes')+
+  facet_wrap(~GENUS)
+
+
+```
 
